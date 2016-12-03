@@ -25,9 +25,14 @@ namespace LambdaMicrobenchmarking
 
         private List<Tuple<String, Func<T>>> actions { get; set; }
 
+        private bool WriteHead { get; set; }
+        private Table Results;
+
         private Script(params Tuple<String, Func<T>>[] actions)
         {
             this.actions = actions.ToList();
+            this.Results = new Table("Benchmark", "Mean", "Mean-Error", "Sdev", "Unit");
+            this.WriteHead = false;
         }
 
         public static Script<T> Of(params Tuple<String, Func<T>>[] actions)
@@ -43,13 +48,17 @@ namespace LambdaMicrobenchmarking
 
         public Script<T> WithHead()
         {
-            Console.WriteLine("{0,-25} \t{1,10} {2,6:0.00} {3,6:0.00} {4,5}", "Benchmark", "Mean", "Mean-Error", "Sdev", "Unit");
+            WriteHead = true;
+            //Console.WriteLine("{0,-25} \t{1,10} {2,6:0.00} {3,6:0.00} {4,5}", "Benchmark", "Mean", "Mean-Error", "Sdev", "Unit");
             return this;
         }
 
         public Script<T> RunAll()
         {
-            actions.Select(action => new Run<T>(action)).ToList().ForEach(run => run.Measure());
+            actions.Select(action => new Run<T>(action)).ToList().ForEach(run => run.Measure(ref Results));
+            if (WriteHead)
+                Results.WriteHead();
+            Results.WriteEntries();
             return this;
         }
     }

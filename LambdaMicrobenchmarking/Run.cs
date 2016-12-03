@@ -88,7 +88,7 @@ namespace LambdaMicrobenchmarking
             return a * GetStandardDeviation() / Math.Sqrt(GetN());
         }
 
-        public void Measure()
+        public void Measure(ref Table results)
         {
             //Force Full GC prior to execution
             GC.Collect();
@@ -119,12 +119,20 @@ namespace LambdaMicrobenchmarking
                 //Console.WriteLine("Milliseconds: {0}", measurements[i]);
             }
 
-            Console.WriteLine("{0,-25}\t{1,10:0.000} {2,10:0.000} {3,6:0.000} {4,5}", 
-                title, 
-                GetMean(), 
-                GetMeanErrorAt(0.999), 
-                GetStandardDeviation(), 
+            results.AddEntry(
+                title,
+                String.Format("{0,0:0.000}", GetMean()),
+                String.Format("{0,0:0.000}", GetMeanErrorAt(0.999)),
+                String.Format("{0,0:0.000}", GetStandardDeviation()),
                 "ms/op");
+
+            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.WriteLine("Working   ");
+            Console.SetCursorPosition(0, (Console.CursorTop == 0) ? 0 : Console.CursorTop - 1);
+            Console.Write("Working");
+            for (int i = 0; i < results.EntriesCount % 3; i++)
+                Console.Write(".");
+            Console.SetCursorPosition(0, Console.CursorTop);
         }
     }
 }
