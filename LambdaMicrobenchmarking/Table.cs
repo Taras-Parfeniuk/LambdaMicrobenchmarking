@@ -1,64 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace LambdaMicrobenchmarking
 {
     public class Table
     {
-        public int EntriesCount
-        {
-            get
-            {
-                return _EntriesCount;
-            }
-        }
+        public int EntriesCount => Entries.Count;
 
-        private int _EntriesCount;
-        private List<String[]> Entries;
-        private readonly int ColumnCount;
-        private String EntryStringFormat;
+        private List<string[]> Entries { get; set; }
+        private readonly int _columnCount;
+        private string _entryStringFormat;
 
-        public Table(params String[] columnNames)
+        public Table(params string[] columnNames)
         {
-            Entries = new List<string[]>();
-            Entries.Add(columnNames);
-            ColumnCount = columnNames.Length;
-            EntryStringFormat = "";
-            _EntriesCount = 0;
+            Entries = new List<string[]> {columnNames};
+            _columnCount = columnNames.Length;
+            _entryStringFormat = "";
         }
 
         public void AddEntry(params object[] values)
         {
-            String[] entry = new String[ColumnCount];
+            var entry = new string[_columnCount];
 
-            for (int i = 0; i < values.Length || i < ColumnCount; i++)
+            for (var i = 0; i < values.Length || i < _columnCount; i++)
             {
                 entry[i] = values[i].ToString();
             }
             Entries.Add(entry);
-            _EntriesCount++;
         }
 
         public void AddEntry(params string[] formatedValues)
         {
-            String[] entry = new String[ColumnCount];
+            var entry = new string[_columnCount];
 
-            for (int i = 0; i < formatedValues.Length || i < ColumnCount; i++)
+            for (var i = 0; i < formatedValues.Length || i < _columnCount; i++)
             {
                 entry[i] = formatedValues[i];
             }
             Entries.Add(entry);
-            _EntriesCount++;
         }
 
-        private IEnumerable<String> GetColumnByName(String value)
+        private IEnumerable<string> GetColumnByName(string value)
         {
-            List<String> Column = new List<String>();
-            String[] header = Entries[0];
-            int n = -1;
-            for (int i = 0; i < ColumnCount; i++)
+            var header = Entries[0];
+            var n = -1;
+            for (var i = 0; i < _columnCount; i++)
             {
                 if (header[i] == value)
                     n = i;
@@ -66,32 +53,17 @@ namespace LambdaMicrobenchmarking
             return GetColumn(n);
         }
 
-        private IEnumerable<String> GetColumn(int columnId)
+        private IEnumerable<string> GetColumn(int columnId)
         {
-            List<String> Column = new List<String>();
-            String[] header = Entries[0];
-            if (columnId < 0 || columnId >= ColumnCount)
-                return null;
+            if (columnId < 0 || columnId >= _columnCount)
+                throw new ArgumentOutOfRangeException();
 
-            foreach (String[] e in Entries)
-            {
-                Column.Add(e[columnId]);
-            }
-            return Column;
+            return Entries.Select(entry => entry[columnId]).ToList();
         }
 
-        private int GetColumnWidth(IEnumerable<String> column)
+        private static int GetColumnWidth(IEnumerable<string> column)
         {
-            List<String> Column = column.ToList<String>();
-
-            int maxWidth = 0;
-
-            foreach (String entry in Column)
-            {
-                if (entry.Length > maxWidth)
-                    maxWidth = entry.Length;
-            }
-            return maxWidth;
+            return column.Select(entry => entry.Length).Concat(new[] { 0 }).Max();
         }
 
         private int GetColumnWidth(int columnId)
@@ -106,28 +78,29 @@ namespace LambdaMicrobenchmarking
 
         private void SetEntryStringFormat()
         {
-            EntryStringFormat = "{0,  -" + GetColumnWidth(0) + "}\t ";
+            _entryStringFormat = "{0,  -" + GetColumnWidth(0) + "}\t ";
 
-            for (int i = 1; i < ColumnCount; i++)
+            for (var i = 1; i < _columnCount; i++)
             {
-                EntryStringFormat += "{" + i + ", " + GetColumnWidth(i) + "} ";
+                _entryStringFormat += "{" + i + ", " + GetColumnWidth(i) + "} ";
             }
         }
 
         public void WriteHead()
         {
             SetEntryStringFormat();
-            Console.WriteLine(EntryStringFormat, Entries[0]);
+            if (Entries != null)
+                Console.WriteLine(_entryStringFormat, Entries[0]);
         }
 
         public void WriteEntries()
         {
             SetEntryStringFormat();
-            foreach (string[] e in Entries)
+            foreach (var entry in Entries)
             {
-                if (e != Entries[0])
+                if (entry != Entries[0] && entry != null)
                 {
-                    Console.WriteLine(EntryStringFormat, e);
+                    Console.WriteLine(_entryStringFormat, entry);
                 }
             }
         }
