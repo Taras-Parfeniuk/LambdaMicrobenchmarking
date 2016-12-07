@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -79,6 +80,26 @@ namespace LambdaMicrobenchmarking
             }
         }
 
+        public long GetMemoryUsage()
+        {
+            if (GetN() > 0)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+
+                Process currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+                long before = GC.GetTotalMemory(true);
+                func();
+                long after = GC.GetTotalMemory(false);
+                return after - before;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
         public double GetMeanErrorAt(double confidence)
         {
             if (GetN() <= 2) 
@@ -124,6 +145,7 @@ namespace LambdaMicrobenchmarking
                 String.Format("{0,0:0.000}", GetMean()),
                 String.Format("{0,0:0.000}", GetMeanErrorAt(0.999)),
                 String.Format("{0,0:0.000}", GetStandardDeviation()),
+                String.Format("{0}" , GetMemoryUsage()),
                 "ms/op");
 
             Console.SetCursorPosition(0, Console.CursorTop);

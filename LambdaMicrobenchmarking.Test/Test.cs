@@ -48,6 +48,8 @@ namespace LambdaMicrobenchmarking.Test
                 .Of("sumSqEvensLinq", sumSqEvenLinq)
                 .Of("cartLinq", cartLinq)
                 .RunAll();
+
+            Console.ReadKey();
         }
     }
 }

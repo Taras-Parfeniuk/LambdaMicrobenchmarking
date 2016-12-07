@@ -31,7 +31,7 @@ namespace LambdaMicrobenchmarking
         private Script(params Tuple<String, Func<T>>[] actions)
         {
             this.actions = actions.ToList();
-            this.Results = new Table("Benchmark", "Mean", "Mean-Error", "Sdev", "Unit");
+            this.Results = new Table("Benchmark", "Mean", "Mean-Error", "Sdev", "Memory(bytes)", "Unit");
             this.WriteHead = false;
         }
 
